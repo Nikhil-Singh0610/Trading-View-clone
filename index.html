@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CryptoPulse + Paper Trading</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0a0a0a;
+      color: #ffffff;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      height: 100vh;
+    }
+    .sidebar {
+      width: 300px;
+      background-color: #1c1c1c;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .watchlist {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .watchlist button, .sidebar button {
+      background-color: #3498db;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+      width: 100%;
+    }
+    .watchlist button:hover, .sidebar button:hover {
+      background-color: #2980b9;
+    }
+    .sidebar input, .sidebar select {
+      width: 100%;
+      padding: 8px;
+      margin: 8px 0;
+      border-radius: 5px;
+      border: none;
+    }
+    .main {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .widget-section {
+      margin-bottom: 30px;
+    }
+    .paper-trading {
+      background: white;
+      color: black;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      margin-top: 20px;
+    }
+    .paper-trading input, .paper-trading select, .paper-trading button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+    }
+    .paper-trading table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    .paper-trading th, .paper-trading td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+    .paper-trading th {
+      background-color: #4CAF50;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>CryptoPulse Watchlist</h2>
+    <div class="watchlist">
+        <button onclick="changeSymbol('BINANCE:BTCUSDT')">BTC</button>
+        <button onclick="changeSymbol('BINANCE:ETHUSDT')">ETH</button>
+        <button onclick="changeSymbol('BINANCE:XRPUSDT')">XRP</button>
+        <button onclick="changeSymbol('BINANCE:BNBUSDT')">BNB</button>
+        <button onclick="changeSymbol('BINANCE:SOLUSDT')">SOL</button>
+        <button onclick="changeSymbol('BINANCE:ADAUSDT')">ADA</button>
+        <button onclick="changeSymbol('BINANCE:DOGEUSDT')">DOGE</button>
+        <button onclick="changeSymbol('BINANCE:DOTUSDT')">DOT</button>
+        <button onclick="changeSymbol('BINANCE:AVAXUSDT')">AVAX</button>
+        <button onclick="changeSymbol('BINANCE:MATICUSDT')">MATIC</button>
+        <button onclick="changeSymbol('BINANCE:SHIBUSDT')">SHIB</button>
+        <button onclick="changeSymbol('BINANCE:LTCUSDT')">LTC</button>
+        <button onclick="changeSymbol('BINANCE:TRXUSDT')">TRX</button>
+        <button onclick="changeSymbol('BINANCE:LINKUSDT')">LINK</button>
+        <button onclick="changeSymbol('BINANCE:ATOMUSDT')">ATOM</button>
+        <button onclick="changeSymbol('BINANCE:NEARUSDT')">NEAR</button>
+        <button onclick="changeSymbol('BINANCE:XLMUSDT')">XLM</button>
+        <button onclick="changeSymbol('BINANCE:APTUSDT')">APT</button>
+        <button onclick="changeSymbol('BINANCE:ARBUSDT')">ARB</button>
+        <button onclick="changeSymbol('BINANCE:ICPUSDT')">ICP</button>
+        
+    </div>
+
+    <h3>SMC Risk Calculator</h3>
+    <label>Investment Amount ($)</label>
+    <input type="number" id="investment-amount" placeholder="Enter amount">
+
+    <label>Entry Price ($)</label>
+    <input type="number" id="entry-price-input" placeholder="Enter entry price">
+
+    <button onclick="calculateRisk()">Calculate Risk</button>
+
+    <h4>Result</h4>
+    <p id="no-of-shares">Shares: 0</p>
+    <p id="entry-price">Entry: $0</p>
+    <p id="stop-loss">SL: $0</p>
+    <p id="take-profit">TP: $0</p>
+    <p id="risk-reward">RR Ratio: 0</p>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main">
+    <!-- TradingView Chart -->
+    <div class="widget-section">
+      <h2>Chart for <span id="selected-symbol">BTCUSDT</span></h2>
+      <div id="tradingview-widget" style="height:500px;"></div>
+    </div>
+
+    <!-- Paper Trading Section -->
+    <div class="paper-trading">
+      <h1>Paper Trading Dashboard</h1>
+      <h2>Balance: $<span id="balance">10000</span></h2>
+
+      <select id="coin">
+        <option value="BTC">Bitcoin (BTC)</option>
+        <option value="ETH">Ethereum (ETH)</option>
+        <option value="SOL">Solana (SOL)</option>
+        <option value="BNB">Binance Coin (BNB)</option>
+        <option value="XRP">Ripple (XRP)</option>
+        <option value="ADA">Cardano (ADA)</option>
+        <option value="DOGE">Dogecoin (DOGE)</option>
+        <option value="TON">Toncoin (TON)</option>
+        <option value="DOT">Polkadot (DOT)</option>
+        <option value="TRX">TRON (TRX)</option>
+        <option value="AVAX">Avalanche (AVAX)</option>
+        <option value="MATIC">Polygon (MATIC)</option>
+        <option value="LTC">Litecoin (LTC)</option>
+        <option value="SHIB">Shiba Inu (SHIB)</option>
+        <option value="LINK">Chainlink (LINK)</option>
+        <option value="BCH">Bitcoin Cash (BCH)</option>
+        <option value="ICP">Internet Computer (ICP)</option>
+        <option value="NEAR">NEAR Protocol (NEAR)</option>
+        <option value="FIL">Filecoin (FIL)</option>
+        <option value="UNI">Uniswap (UNI)</option>
+        
+      </select>
+
+      <input type="number" id="quantity" placeholder="Enter quantity">
+      <button onclick="buyCoin()">Buy</button>
+      <button onclick="sellCoin()">Sell</button>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Coin</th>
+            <th>Quantity</th>
+            <th>Buy Price</th>
+            <th>Current Price</th>
+            <th>P&L</th>
+          </tr>
+        </thead>
+        <tbody id="positions"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://s3.tradingview.com/tv.js"></script>
+<script>
+  let widget = null;
+
+  function loadTradingViewWidget(symbol) {
+    if (widget) widget.remove();
+    widget = new TradingView.widget({
+      container_id: "tradingview-widget",
+      autosize: true,
+      symbol: symbol,
+      interval: "30",
+      timezone: "Etc/UTC",
+      theme: "dark",
+      style: "1",
+      locale: "en",
+      toolbar_bg: "#f1f3f6",
+      enable_publishing: false,
+      allow_symbol_change: true,
+      hide_legend: false,
+      save_image: false,
+      studies: [],
+      show_popup_button: true,
+      popup_width: "1000",
+      popup_height: "650"
+    });
+  }
+
+  function changeSymbol(symbol) {
+    loadTradingViewWidget(symbol);
+    document.getElementById('selected-symbol').innerText = symbol.split(':')[1];
+  }
+
+  function calculateRisk() {
+    const investment = parseFloat(document.getElementById('investment-amount').value);
+    const entry = parseFloat(document.getElementById('entry-price-input').value);
+    if (isNaN(investment) || isNaN(entry) || entry <= 0) {
+      alert('Please enter valid numbers!');
+      return;
+    }
+    const riskPercent = 0.02; // 2% risk
+    const stopLoss = entry * 0.98;
+    const takeProfit = entry * 1.04;
+    const shares = (investment * riskPercent) / (entry - stopLoss);
+
+    document.getElementById('no-of-shares').innerText = `Shares: ${shares.toFixed(2)}`;
+    document.getElementById('entry-price').innerText = `Entry: $${entry}`;
+    document.getElementById('stop-loss').innerText = `SL: $${stopLoss.toFixed(2)}`;
+    document.getElementById('take-profit').innerText = `TP: $${takeProfit.toFixed(2)}`;
+    document.getElementById('risk-reward').innerText = `RR Ratio: ${((takeProfit - entry) / (entry - stopLoss)).toFixed(2)}`;
+  }
+
+  // Paper Trading Logic
+  let balance = localStorage.getItem('balance') ? parseFloat(localStorage.getItem('balance')) : 10000;
+  let positions = JSON.parse(localStorage.getItem('positions') || '[]');
+
+  const dummyPrices = {
+    'BTC': 60000,
+    'ETH': 3000,
+    'SOL': 150
+  };
+
+  function updateUI() {
+    document.getElementById('balance').innerText = balance.toFixed(2);
+    const positionsTable = document.getElementById('positions');
+    positionsTable.innerHTML = '';
+    positions.forEach((pos) => {
+      const currentPrice = dummyPrices[pos.coin];
+      const pnl = (currentPrice - pos.buyPrice) * pos.quantity;
+      positionsTable.innerHTML += `<tr>
+        <td>${pos.coin}</td>
+        <td>${pos.quantity}</td>
+        <td>$${pos.buyPrice}</td>
+        <td>$${currentPrice}</td>
+        <td style="color: ${pnl >= 0 ? 'green' : 'red'}">$${pnl.toFixed(2)}</td>
+      </tr>`;
+    });
+    localStorage.setItem('balance', balance);
+    localStorage.setItem('positions', JSON.stringify(positions));
+  }
+
+  function buyCoin() {
+    const coin = document.getElementById('coin').value;
+    const quantity = parseFloat(document.getElementById('quantity').value);
+    const price = dummyPrices[coin];
+    if (balance >= price * quantity) {
+      positions.push({ coin, quantity, buyPrice: price });
+      balance -= price * quantity;
+      updateUI();
+    } else {
+      alert('Not enough balance!');
+    }
+  }
+
+  function sellCoin() {
+    const coin = document.getElementById('coin').value;
+    const quantity = parseFloat(document.getElementById('quantity').value);
+    const price = dummyPrices[coin];
+
+    let index = positions.findIndex(p => p.coin === coin && p.quantity >= quantity);
+    if (index > -1) {
+      positions[index].quantity -= quantity;
+      if (positions[index].quantity === 0) positions.splice(index, 1);
+      balance += price * quantity;
+      updateUI();
+    } else {
+      alert('Not enough coins to sell!');
+    }
+  }
+
+  window.onload = function() {
+    loadTradingViewWidget('BINANCE:BTCUSDT');
+    updateUI();
+  }
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
